@@ -1,0 +1,16 @@
+description: Stock MLPerf Storage UNet3D on one node, for results comparable with published MLPerf numbers.
+mlperf:
+  mode: whatif            # h100 UNet3D is not a v3.0 submittable combination; results are for characterisation only
+  model: unet3d
+  accelerator_type: h100  # H200 is Hopper; MLPerf defines no h200 emulation
+  record_bytes: 146600628 # configs/dlio/workload/unet3d_h100.yaml
+  mem_factor: 5           # MLPerf rule 3.1.2: dataset >= 5x client memory
+  datasets:
+    stock: {}
+  runs:
+    - {name: unet3d-acc1, dataset: stock, accelerators: 1}
+    - {name: unet3d-acc2, dataset: stock, accelerators: 2}
+    - {name: unet3d-acc4, dataset: stock, accelerators: 4}
+    - {name: unet3d-acc8, dataset: stock, accelerators: 8}
+    - {name: unet3d-acc16, dataset: stock, accelerators: 16}
+    - {name: unet3d-acc32, dataset: stock, accelerators: 32}

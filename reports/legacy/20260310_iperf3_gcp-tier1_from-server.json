@@ -1,0 +1,26 @@
+{
+  "suite": "network",
+  "name": "iperf3",
+  "primary": {
+    "name": "gbps",
+    "value": 30,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {},
+  "params": {
+    "streams": 10,
+    "iperf3": "3.20+"
+  },
+  "scenario": "from-server",
+  "profile": "s3df-dtn",
+  "cache": "unknown",
+  "tags": {
+    "client": "gcp-tier1",
+    "note": "S3DF to Google Tier 1 VM; 30 Gbps is the Google per-VM ingress limit"
+  },
+  "env": {},
+  "started": "2026-03-10",
+  "duration_s": 0.0,
+  "source": "Jira DM-54361 comment 639755, 2026-03-10"
+}

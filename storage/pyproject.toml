@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ibench-storage"
+version = "0.1.0"
+description = "POSIX/S3 microbenchmarks and MLPerf Storage wrapper."
+requires-python = ">=3.11"
+dependencies = ["ibench-common", "boto3", "pyyaml"]
+
+[project.scripts]
+ibench-storage = "ibench_storage.cli:main"
+
+[tool.uv.sources]
+ibench-common = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ibench_storage"]

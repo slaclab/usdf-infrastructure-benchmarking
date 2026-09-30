@@ -1,0 +1,30 @@
+{
+  "suite": "network",
+  "name": "iperf3",
+  "primary": {
+    "name": "gbps",
+    "value": 60.6,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "gbps_vm1": 30.4,
+    "gbps_vm2": 30.2
+  },
+  "params": {
+    "streams": 10,
+    "seconds": 120,
+    "vms": 2
+  },
+  "scenario": "to-server",
+  "profile": "sdfdatas3",
+  "cache": "unknown",
+  "tags": {
+    "client": "gcp-tier1-x2",
+    "note": "two Tier 1 VMs in us-central1-c, sum of the per-VM receiver [SUM] lines; gateway node not named in the ticket"
+  },
+  "env": {},
+  "started": "2026-03-17",
+  "duration_s": 0.0,
+  "source": "Jira DM-54361 comment 642440, 2026-03-17; Slack #square-team 2026-03-24"
+}

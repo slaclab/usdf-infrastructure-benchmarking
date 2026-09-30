@@ -1,0 +1,27 @@
+[project]
+name = "usdf-infrastructure-benchmarking"
+version = "0.1.0"
+description = "Storage and network benchmarks for SLAC S3DF/USDF with a consolidated performance history."
+requires-python = ">=3.11"
+dependencies = ["ibench-common", "ibench-network", "ibench-storage", "ibench-report"]
+
+[project.optional-dependencies]
+plots = ["ibench-report[plots]"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["common", "network", "storage", "reports"]
+
+[tool.uv.sources]
+ibench-common = { workspace = true }
+ibench-network = { workspace = true }
+ibench-storage = { workspace = true }
+ibench-report = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

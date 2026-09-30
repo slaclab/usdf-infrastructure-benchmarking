@@ -1,0 +1,24 @@
+{
+  "suite": "storage",
+  "name": "micro.throughput",
+  "primary": {
+    "name": "peak_gbps",
+    "value": 2.6,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {},
+  "params": {},
+  "scenario": "s3-remote-read",
+  "profile": "s3",
+  "cache": "unknown",
+  "tags": {
+    "client": "sdfiana",
+    "note": "gateway=old (pre 2026-07-14 cutover); ramping parallel downloads from an sdfiana node",
+    "gateway": "old"
+  },
+  "env": {},
+  "started": "2026-06-24",
+  "duration_s": 0.0,
+  "source": "Slack #usdf-infra-support thread 1782247060.451859, 2026-06-24; transcribed, verify before citing"
+}

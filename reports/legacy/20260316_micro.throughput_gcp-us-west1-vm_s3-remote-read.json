@@ -1,0 +1,30 @@
+{
+  "suite": "storage",
+  "name": "micro.throughput",
+  "primary": {
+    "name": "peak_gbps",
+    "value": 5.64,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "peak_concurrency": 16,
+    "mbps_mean": 705.16,
+    "ttfb_ms_mean": 34.88
+  },
+  "params": {
+    "key": "20250915/MC_O_20250915_000001.zip",
+    "chunk_mib": 8
+  },
+  "scenario": "s3-remote-read",
+  "profile": "s3",
+  "cache": "unknown",
+  "tags": {
+    "client": "gcp-us-west1-vm",
+    "note": "VM in us-west1, 24.2 ms to S3DF"
+  },
+  "env": {},
+  "started": "2026-03-16",
+  "duration_s": 0.0,
+  "source": "Jira DM-54361 comment 641960, 2026-03-16"
+}

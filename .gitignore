@@ -1,0 +1,40 @@
+# python / uv
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# MLPerf engine (checkout + venv built by storage/scripts/setup_mlperf.sh)
+.vendor/
+
+# raw engine output and large artifacts; summary JSON in results/ is tracked
+**/results/raw/
+**/results/*.log
+**/results/logs/
+**/.mlps/
+*.npz
+*.parquet
+
+# DLIO side effects
+checkpoints/
+
+# slurm
+slurm-*.out
+*.sbatch.out
+
+# local-only notes: context and assistant instructions, never committed
+factsheet.md
+CLAUDE.md
+
+# secrets and local config
+.env
+.env.*
+*.pem
+
+# editors / OS
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,6 @@
+description: Reads from an S3 endpoint - throughput vs concurrency, hot and cold latency, bulk transfer.
+micro:
+  - {test: throughput, key: "${IBENCH_S3_KEY}", levels: [1, 4, 16, 32, 64], iterations: 3, chunk_mib: 8}
+  - {test: latency, label: hot-single, key: "${IBENCH_S3_KEY}", size: 65536, n: 2000, concurrency: 1}
+  - {test: latency, label: cold-many, prefix: "${IBENCH_S3_PREFIX}", size: 65536, n: 2000, max_objects: 500, concurrency: 8}
+  - {test: bulk, prefix: "${IBENCH_S3_PREFIX}", concurrency: 32, max_objects: 200, max_gb: 50}

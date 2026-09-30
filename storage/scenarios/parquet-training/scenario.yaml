@@ -1,0 +1,27 @@
+description: Training-style reads of parquet partitions by concurrent workers, swept over partition size, workers, batch size and clients.
+mlperf:
+  mode: whatif
+  model: flux             # stock parquet workload (flux_b200.yaml); partition size is set by samples per file
+  accelerator_type: b200  # only sets the emulated compute time, which is overridden to 0 below
+  record_bytes: 2164832   # flux row size (sum of its parquet columns)
+  mem_factor: 2           # >2x client RAM keeps reads out of the page cache; 5 for MLPerf-rule sizing
+  params:                 # applied to every run; runs override
+    train.computation_time: 0   # no emulated compute: measures what storage delivers
+    reader.read_threads: 8
+    reader.batch_size: 48
+  datasets:
+    p150: {params: {dataset.num_samples_per_file: 72}}    # ~150 MiB partition
+    p300: {params: {dataset.num_samples_per_file: 145}}   # ~300 MiB
+    p600: {params: {dataset.num_samples_per_file: 290}}   # ~600 MiB
+  runs:
+    - {name: base, dataset: p300, accelerators: 4}
+    - {name: size-p150, dataset: p150, accelerators: 4}
+    - {name: size-p600, dataset: p600, accelerators: 4}
+    - {name: workers-t1, dataset: p300, accelerators: 4, params: {reader.read_threads: 1}}
+    - {name: workers-t2, dataset: p300, accelerators: 4, params: {reader.read_threads: 2}}
+    - {name: workers-t4, dataset: p300, accelerators: 4, params: {reader.read_threads: 4}}
+    - {name: workers-t16, dataset: p300, accelerators: 4, params: {reader.read_threads: 16}}
+    - {name: batch-b16, dataset: p300, accelerators: 4, params: {reader.batch_size: 16}}
+    - {name: batch-b96, dataset: p300, accelerators: 4, params: {reader.batch_size: 96}}
+    - {name: clients-a1, dataset: p300, accelerators: 1}
+    - {name: clients-a16, dataset: p300, accelerators: 16}

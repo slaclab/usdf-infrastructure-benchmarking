@@ -1,0 +1,26 @@
+{
+  "suite": "network",
+  "name": "iperf3",
+  "primary": {
+    "name": "gbps",
+    "value": 320,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {},
+  "params": {
+    "pairs": 4,
+    "streams_per_pair": 5
+  },
+  "scenario": "4-pairs",
+  "profile": "sdfemb101-203",
+  "cache": "unknown",
+  "tags": {
+    "client": "sdfiana028-031",
+    "note": "Ceph embargo rack, not the Weka gateways; 400G uplinks shared with other traffic"
+  },
+  "env": {},
+  "started": "2026-09-15",
+  "duration_s": 0.0,
+  "source": "Slack #ceph-embargo-s3-performance-eval, 2026-09-15; transcribed, verify before citing"
+}
