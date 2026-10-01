@@ -8,6 +8,7 @@ import statistics
 from pathlib import Path
 
 from ibench.env import ROOT
+from ibench_report import intake
 
 SOURCES = ("network/results", "storage/results", "reports/legacy")
 SERIES = ("suite", "name", "scenario", "profile", "target", "client", "cache", "metric")
@@ -19,17 +20,18 @@ def load(root: Path = ROOT) -> list[dict]:
     for src in SOURCES:
         for p in sorted((root / src).glob("*.json")):
             r = json.loads(p.read_text())
-            pr, env = r["primary"], r.get("env") or {}
+            pr, env, tags = r["primary"], r.get("env") or {}, r.get("tags") or {}
             rows.append({
                 "suite": r["suite"], "name": r["name"], "scenario": r.get("scenario", ""),
-                "profile": r.get("profile", ""), "target": (r.get("tags") or {}).get("target", ""),
-                "client": (r.get("tags") or {}).get("client", ""),
+                "profile": r.get("profile", ""), "target": tags.get("target") or tags.get("scope", ""),
+                "client": tags.get("client", ""),
                 "cache": r.get("cache", "unknown"), "metric": pr["name"], "started": r["started"],
                 "value": pr["value"], "unit": pr["unit"], "higher_is_better": pr.get("higher_is_better", True),
                 "source": r.get("source", "ibench"), "host": env.get("host", ""),
-                "git": (env.get("git") or {}).get("sha") or "", "session": (r.get("tags") or {}).get("session", ""),
+                "git": (env.get("git") or {}).get("sha") or "", "session": tags.get("session", ""),
                 "file": str(p.relative_to(root)),
             })
+    rows += intake.load(root / "reports/intake")
     return sorted(rows, key=lambda r: (r["started"], r["file"]))
 
 

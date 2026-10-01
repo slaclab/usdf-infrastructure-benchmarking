@@ -65,6 +65,15 @@ run. Copy `sites/template.yaml` to `sites/<client label>.yaml` and fill it in; i
 client. POSIX scenarios need the filesystem mounted; S3, network and report commands do not. Copy the new
 `*/results/*.json` files into the same folders of a checkout and run `uv run ibench-report build`.
 
+## Related load tests
+
+- [embargo-loadsim](https://github.com/lsst-dm/embargo-loadsim): Locust simulator of the observatory visit workload
+  (bursty writes, calibration preloads, readback, pipeline write-out) for S3 endpoints.
+- [usdf_benchmarks](https://github.com/slaclab/usdf_benchmarks): load tests driven through HTCondor and Slurm.
+
+This repo's storage scenarios measure reads and interference through the gateways; use the simulator for write-heavy
+or time-structured loads.
+
 ## Results
 
 Per-run JSON (metrics, parameters, host, site description, kernel TCP settings, allocation, git SHA and uv.lock hash,
