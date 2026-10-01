@@ -7,8 +7,6 @@ from pathlib import Path
 
 import yaml
 
-from ibench_storage.backends import S3, Posix
-
 PROFILES = Path(__file__).resolve().parents[2] / "profiles.yaml"
 
 
@@ -31,7 +29,6 @@ def load(name: str, **override) -> dict:
     return prof
 
 
-def backend(prof: dict):
-    if prof["kind"] == "posix":
-        return Posix(prof["root"])
-    return S3(prof["endpoint"], prof["bucket"], prof.get("region"), prof.get("anonymous") in ("1", "true", True))
+def target(prof: dict) -> str:
+    """Where the data lives; part of a result's series."""
+    return prof.get("root") or f"{prof['endpoint']}/{prof['bucket']}"

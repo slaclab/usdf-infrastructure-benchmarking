@@ -1,0 +1,4 @@
+description: Reads of parquet partitions - whole-file concurrency sweep and row-group-sized ranged reads.
+steps:
+  - {label: partitions, data: parquet_partition, concurrency: [1, 4, 16, 32, 64], duration_s: 60}
+  - {label: rowgroups, data: parquet_partition, range_mib: 1, concurrency: 16, duration_s: 60, metric: latency}

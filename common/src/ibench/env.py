@@ -1,6 +1,7 @@
 """Host, network and filesystem context recorded with every result."""
 from __future__ import annotations
 
+import hashlib
 import os
 import platform
 import re
@@ -72,6 +73,7 @@ def mount_of(path: str) -> dict | None:
 def capture(path: str | None = None) -> dict:
     cpu = re.search(r"model name\s*:\s*(.+)", _read("/proc/cpuinfo") or "")
     root = str(ROOT)
+    lock = ROOT / "uv.lock"
     return {
         "host": socket.gethostname(),
         "kernel": platform.release(),
@@ -85,5 +87,6 @@ def capture(path: str | None = None) -> dict:
             "sha": sh("git", "-C", root, "rev-parse", "--short", "HEAD"),
             "dirty": bool(sh("git", "-C", root, "status", "--porcelain")),
         },
+        "uv_lock": hashlib.sha256(lock.read_bytes()).hexdigest()[:12] if lock.exists() else None,
         "iperf3": (sh("iperf3", "--version") or "").splitlines()[:1],
     }

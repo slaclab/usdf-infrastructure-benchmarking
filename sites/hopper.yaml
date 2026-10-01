@@ -1,0 +1,4 @@
+site: S3DF hopper partition
+node: {model: "", cpu: AMD EPYC Turin 9575F, memory_gib: 1344, nic: "", nic_gbps: null, gpus: "4x H200", threads: 224}
+network: {path_to_storage: within S3DF, notes: ""}
+storage: {filesystem: Weka (sdfdata), s3_endpoints: [https://sdfdatas3.slac.stanford.edu], notes: ""}

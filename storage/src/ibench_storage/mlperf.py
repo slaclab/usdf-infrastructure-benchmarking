@@ -44,7 +44,7 @@ def _env(prof: dict) -> dict:
     env = {**os.environ, "PATH": f"{BIN.parent}{os.pathsep}{os.environ['PATH']}"}  # mlpstorage finds dlio_benchmark on PATH
     if prof["kind"] == "s3":
         if "," in prof["endpoint"] or prof.get("anonymous") in ("1", "true"):
-            raise SystemExit("MLPerf object mode needs one signed endpoint; lists and anonymous access are micro-only")
+            raise SystemExit("MLPerf object mode here uses one signed endpoint; endpoint lists and anonymous access are not supported")
         env.update(AWS_ENDPOINT_URL=prof["endpoint"], BUCKET=prof["bucket"], MLPS_S3_BUCKET=prof["bucket"],
                    AWS_REGION=prof.get("region", "us-east-1"), STORAGE_LIBRARY=prof.get("library", "s3dlio"))
     return env
@@ -104,7 +104,7 @@ def datagen(scn: str, m: dict, prof: dict, only: str | None, mem_factor: float, 
     for ds in dict.fromkeys(r["dataset"] for r in _selected(m, only)):
         params = dlio_params(m, ds, mem_factor)
         cmd = _cmd(m, "datagen", prof, scn, ds, params, ["--num-processes", str(procs)])
-        _exec(cmd, _env(prof), LOGS / f"{int(time.time())}_{scn}_datagen_{ds}.log")
+        _exec(cmd, _env(prof), LOGS / f"{int(time.time())}_{scn.replace('/', '-')}_datagen_{ds}.log")
 
 
 def configview(scn: str, m: dict, prof: dict, only: str | None, mem_factor: float) -> None:
@@ -122,7 +122,7 @@ def run(scn: str, m: dict, prof: dict, only: str | None, mem_factor: float) -> l
         params = {**dlio_params(m, r["dataset"], mem_factor), **m.get("params", {}), **r.get("params", {})}
         cmd = _cmd(m, "run", prof, scn, r["dataset"], params, _accel_args(m, r["accelerators"]))
         start = time.time()
-        _exec(cmd, _env(prof), LOGS / f"{int(start)}_{scn}_{r['name']}.log")
+        _exec(cmd, _env(prof), LOGS / f"{int(start)}_{scn.replace('/', '-')}_{r['name']}.log")
         metrics = _flatten(_summary(m["model"], start))
         if PRIMARY[0] not in metrics:
             raise SystemExit(f"{PRIMARY[0]} missing from summary; keys: {sorted(metrics)}")

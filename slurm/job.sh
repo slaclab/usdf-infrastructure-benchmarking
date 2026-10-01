@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run any ibench command as a batch job; arguments are the command.
-#   sbatch slurm/job.sh ibench-storage run s3-remote-read --profile s3
+#   sbatch slurm/job.sh ibench-storage run rubin-access/object-reads --profile s3
 # Other site or shape: sbatch -p <partition> -A <account> --cpus-per-task=32 --mem=128G slurm/job.sh ...
 #SBATCH --job-name=ibench
 #SBATCH --partition=hopper

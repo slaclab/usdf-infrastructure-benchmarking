@@ -1,7 +1,7 @@
 # Endpoint profiles. ${VAR} and ${VAR:-default} expand from the environment.
 # S3 credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY, never from this file.
-# IBENCH_S3_ANON=1 sends unsigned requests (public buckets). IBENCH_S3_ENDPOINT may list several
-# endpoints, comma-separated, to spread load over gateway nodes (micro benchmarks only).
+# IBENCH_S3_ENDPOINT may list several endpoints, comma-separated (https://a,https://b), to spread load over
+# gateway nodes. IBENCH_S3_LOOKUP is path (default) or host for virtual-hosted-style buckets.
 
 posix:
   kind: posix
@@ -12,5 +12,5 @@ s3:
   endpoint: ${IBENCH_S3_ENDPOINT}
   bucket: ${IBENCH_S3_BUCKET}
   region: ${AWS_REGION:-us-east-1}
-  anonymous: ${IBENCH_S3_ANON:-}
+  lookup: ${IBENCH_S3_LOOKUP:-path}
   library: s3dlio

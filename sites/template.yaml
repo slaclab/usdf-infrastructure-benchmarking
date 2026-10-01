@@ -1,0 +1,5 @@
+# Copy to sites/<client label>.yaml. Results recorded with --client <label> (or --site <name>) carry this file.
+site: ""
+node: {model: "", cpu: "", memory_gib: null, nic: "", nic_gbps: null}
+network: {path_to_storage: "", notes: ""}
+storage: {filesystem: "", s3_endpoints: [], notes: ""}

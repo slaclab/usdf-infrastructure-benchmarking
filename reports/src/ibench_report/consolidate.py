@@ -4,13 +4,14 @@ from __future__ import annotations
 import csv
 import json
 import re
+import statistics
 from pathlib import Path
 
 from ibench.env import ROOT
 
 SOURCES = ("network/results", "storage/results", "reports/legacy")
 SERIES = ("suite", "name", "scenario", "profile", "target", "client", "cache", "metric")
-COLUMNS = (*SERIES, "started", "value", "unit", "higher_is_better", "source", "host", "git", "file")
+COLUMNS = (*SERIES, "started", "value", "unit", "higher_is_better", "source", "host", "git", "session", "file")
 
 
 def load(root: Path = ROOT) -> list[dict]:
@@ -26,16 +27,29 @@ def load(root: Path = ROOT) -> list[dict]:
                 "cache": r.get("cache", "unknown"), "metric": pr["name"], "started": r["started"],
                 "value": pr["value"], "unit": pr["unit"], "higher_is_better": pr.get("higher_is_better", True),
                 "source": r.get("source", "ibench"), "host": env.get("host", ""),
-                "git": (env.get("git") or {}).get("sha") or "", "file": str(p.relative_to(root)),
+                "git": (env.get("git") or {}).get("sha") or "", "session": (r.get("tags") or {}).get("session", ""),
+                "file": str(p.relative_to(root)),
             })
     return sorted(rows, key=lambda r: (r["started"], r["file"]))
 
 
-def group(rows: list[dict]) -> dict[tuple, list[dict]]:
-    out: dict[tuple, list[dict]] = {}
+def _collapse(rows: list[dict]) -> list[dict]:
+    """Repeats from one session become one point: the median, with the count and the min and max."""
+    sessions: dict[str, list[dict]] = {}
     for r in rows:
-        out.setdefault(tuple(r[k] for k in SERIES), []).append(r)
-    return out
+        sessions.setdefault(r["session"] or r["file"], []).append(r)
+    points = []
+    for grp in sessions.values():
+        vals = sorted(g["value"] for g in grp)
+        points.append({**grp[-1], "value": statistics.median(vals), "n": len(vals), "min": vals[0], "max": vals[-1]})
+    return sorted(points, key=lambda r: r["started"])
+
+
+def group(rows: list[dict]) -> dict[tuple, list[dict]]:
+    series: dict[tuple, list[dict]] = {}
+    for r in rows:
+        series.setdefault(tuple(r[k] for k in SERIES), []).append(r)
+    return {key: _collapse(pts) for key, pts in series.items()}
 
 
 def compare(pts: list[dict], threshold: float) -> tuple[str, float | None]:
@@ -56,15 +70,18 @@ def render(rows: list[dict], threshold: float = 0.10) -> str:
     groups = group(rows)
     lines = ["# Latest performance", "",
              f"{len(rows)} runs in {len(groups)} series, {rows[0]['started'][:10]} to {rows[-1]['started'][:10]}. "
-             f"Status compares the latest run with the previous one in the same series "
-             f"(regression or improvement beyond {threshold:.0%}). Per-run detail is in `history.csv`.", ""]
+             f"Status compares the latest session with the previous one in the same series (regression or "
+             f"improvement beyond {threshold:.0%}); repeats in one session show as their median with n and range. "
+             f"Per-run detail is in `history.csv`.", ""]
     table = []
     for key, pts in sorted(groups.items()):
         status, delta = compare(pts, threshold)
         best = (max if pts[-1]["higher_is_better"] else min)(p["value"] for p in pts)
         last = pts[-1]
+        spread = f" (n={last['n']}, {_fmt(last['min'])}-{_fmt(last['max'])})" if last["n"] > 1 else ""
+        series = " / ".join(filter(None, (*key[:6], key[6] if key[6] != "unknown" else "")))
         table.append((key, status, [
-            " / ".join(filter(None, (*key[:6], key[6] if key[6] != "unknown" else ""))), f"{_fmt(last['value'])} {last['unit']}", last["started"][:10],
+            series, f"{_fmt(last['value'])} {last['unit']}{spread}", last["started"][:10],
             _fmt(pts[-2]["value"]) if len(pts) > 1 else "-", f"{delta:+.1%}" if delta is not None else "-",
             _fmt(best), status, str(len(pts))]))
     header = "| Series (suite / test / scenario / profile / target / client / cache) | Latest | Date | Previous | Change | Best | Status | Runs |\n|---|---|---|---|---|---|---|---|"

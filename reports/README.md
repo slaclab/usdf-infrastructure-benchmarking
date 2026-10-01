@@ -14,7 +14,10 @@ uv run ibench-report build --plots     # also plots/*.png (uv sync --extra plots
 - `legacy/`: earlier measurements in the same schema, each citing its source; some are transcribed from chat and
   marked so.
 
-Mixed-load runs appear as `mix.<load>.ratio` (together over alone): below 1 for throughput or above 1 for latency is
+Runs repeated with `--repeat N` share a session and appear as one point: the median, with n and the min-max range in
+`latest.md`; `history.csv` keeps every run.
+
+Interference runs appear as `mix.<load>.ratio` (together over alone): below 1 for throughput or above 1 for latency is
 interference.
 
 Generated files are committed so the history is reviewable in git.

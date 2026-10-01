@@ -1,31 +1,72 @@
-"""Run one microbenchmark step and wrap it as a Run record."""
+"""A read step -> one job per concurrency level -> Run records. S3 profiles use warp, POSIX profiles use fio."""
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass
+from pathlib import Path
 
 from ibench import Run, capture, metric
-from ibench_storage import micro
+from ibench_storage import engine, fio, warp
+from ibench_storage.profiles import target
+from ibench_storage.store import Store
+
+MIB = 1 << 20
 
 
-def micro_run(test: str, be, prof: dict, a: dict, scenario: str = "") -> Run:
-    t0 = time.time()
-    if test == "throughput":
-        m = micro.throughput(be, a["key"], a.get("levels", [1, 4, 16, 32, 64]), a.get("iterations", 3),
-                             a.get("chunk_mib", 8) << 20, a.get("warmup", True))
-        primary = metric("peak_gbps", m["peak_gbps"], "Gbps")
-    elif test == "latency":
-        files = ([(a["key"], be.size(a["key"]))] if "key" in a else
-                 micro.select(be, a["prefix"], a.get("max_objects", 1000), int(a.get("max_gb", 50) * 1e9)))
-        m = micro.latency(be, files, a.get("n", 1000), a.get("size", 1 << 20), a.get("concurrency", 1),
-                          a.get("duration_s"))
-        primary = metric("p99_ms", m["p99_ms"], "ms", higher_is_better=False)
-    elif test == "bulk":
-        objects = micro.select(be, a["prefix"], a.get("max_objects", 1000), int(a.get("max_gb", 50) * 1e9))
-        m = micro.bulk(be, objects, a.get("concurrency", 32), a.get("duration_s"))
-        primary = metric("gbps", m["gbps"], "Gbps")
-    else:
-        raise SystemExit(f"unknown micro test {test!r}")
-    name = f"micro.{test}" + (f".{a['label']}" if a.get("label") else "")
-    where = prof.get("root") or f"{prof.get('endpoint')}/{prof.get('bucket')}"  # endpoint list => distinct series
-    return Run("storage", name, primary, m, dict(a), scenario, prof["name"],
-               env=capture(prof.get("root")), duration_s=time.time() - t0, tags={"target": where})
+@dataclass
+class Planned:
+    name: str
+    level: int
+    prefix: str
+    job: engine.Job
+
+
+def prefix_of(step: dict, base: str) -> str:
+    return step["prefix"] if "prefix" in step else f"{base}/{step['data']}/"
+
+
+def _range_bytes(step: dict) -> int:
+    if "range_kib" in step:
+        return int(step["range_kib"] * 1024)
+    return int(step.get("range_mib", 0) * MIB)
+
+
+def plan(prof: dict, step: dict, scenario: str, base: str) -> list[Planned]:
+    """Jobs for one step; the listing check fails early on a missing prefix instead of mid-run."""
+    prefix = prefix_of(step, base)
+    store = Store(prof)
+    found = store.list(prefix, limit=step.get("max_objects", 500))
+    if not found:
+        raise SystemExit(f"nothing under {prefix!r} on {target(prof)}; create it with `ibench-storage mkdata` "
+                         "or point the step at existing data")
+    levels = step["concurrency"] if isinstance(step.get("concurrency"), list) else [step.get("concurrency", 8)]
+    rng = _range_bytes(step)
+    out = []
+    for level in levels:
+        name = f"read.{step['label']}" + (f".c{level}" if len(levels) > 1 else "")
+        base_path = engine.RAW / f"{int(time.time())}_{scenario.replace('/', '-')}_{name}"
+        if prof["kind"] == "s3":
+            job = warp.job(prof, prefix, level, step.get("duration_s", 60), rng, base_path)
+        else:
+            files = [str(Path(prof["root"]) / k) for k, _ in found]
+            job = fio.job(files, level, step.get("duration_s", 60), rng or MIB, not rng, step.get("direct", False),
+                          base_path)
+        out.append(Planned(name, level, prefix, job))
+    return out
+
+
+def record(prof: dict, p: Planned, metrics: dict, step: dict, scenario: str, seconds: float) -> Run:
+    primary = (metric("p99_ms", metrics["p99_ms"], "ms", higher_is_better=False)
+               if step.get("metric") == "latency" else metric("gbps", metrics["gbps"], "Gbps"))
+    env = {**capture(prof.get("root")),
+           "tool": {"name": p.job.tool, "version": engine.version(p.job.cmd[0]), "cmd": p.job.cmd}}
+    return Run("storage", p.name, primary, metrics, {**step, "prefix": p.prefix, "concurrency": p.level}, scenario,
+               prof["name"], env=env, duration_s=seconds, tags={"target": target(prof)})
+
+
+def run(prof: dict, step: dict, scenario: str, base: str) -> list[Run]:
+    out = []
+    for p in plan(prof, step, scenario, base):
+        t0 = time.time()
+        out.append(record(prof, p, engine.execute(p.job), step, scenario, time.time() - t0))
+    return out

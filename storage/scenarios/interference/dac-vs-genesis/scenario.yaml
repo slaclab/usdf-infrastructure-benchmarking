@@ -1,0 +1,5 @@
+description: Rubin access reads (images, tiles) and Genesis bulk partition reads on one endpoint, alone and together.
+mix:
+  dac_images: {data: visit_image, concurrency: 8, duration_s: 120}
+  dac_tiles: {data: hips_tile, concurrency: 16, metric: latency, duration_s: 120}
+  genesis: {data: parquet_partition, concurrency: 32, duration_s: 120}

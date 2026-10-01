@@ -1,0 +1,5 @@
+description: Tokenize JSON-lines text shards and write token shards.
+tokenize:
+  data: text_shard
+  label: text
+  batch_size: 1000

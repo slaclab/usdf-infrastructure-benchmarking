@@ -1,0 +1,8 @@
+description: Reads of Rubin-shaped objects - whole images, ranged table reads, cutout-sized ranges, small tiles.
+steps:
+  - {label: images, data: visit_image, concurrency: [1, 8, 32, 64], duration_s: 60}
+  - {label: coadds, data: coadd, concurrency: [8, 32], duration_s: 60}
+  - {label: raw, data: raw_zip, concurrency: [4, 16], duration_s: 60}
+  - {label: tables, data: object_table, range_mib: 8, concurrency: [8, 32], duration_s: 60}
+  - {label: cutouts, data: visit_image, range_kib: 64, concurrency: 8, duration_s: 60, metric: latency}
+  - {label: tiles, data: hips_tile, concurrency: 16, duration_s: 60, metric: latency}

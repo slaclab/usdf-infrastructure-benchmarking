@@ -1,6 +1,6 @@
 # Latest performance
 
-11 runs in 10 series, 2026-03-10 to 2026-09-15. Status compares the latest run with the previous one in the same series (regression or improvement beyond 10%). Per-run detail is in `history.csv`.
+11 runs in 10 series, 2026-03-10 to 2026-09-15. Status compares the latest session with the previous one in the same series (regression or improvement beyond 10%); repeats in one session show as their median with n and range. Per-run detail is in `history.csv`.
 
 ## network
 

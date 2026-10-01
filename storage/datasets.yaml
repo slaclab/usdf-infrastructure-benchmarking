@@ -1,0 +1,13 @@
+# Mock payload classes written by `ibench-storage mkdata` (count x size at --scale 1; sizes vary +-jitter).
+# Sizes are the mean per-file sizes of Rubin DP2 dataset types from the DRP resource estimates
+# (w_2025_41 pipeline), except where marked assumed.
+visit_image:       {count: 200,   size: 100MiB}                        # visit_image, mean 0.107 GB
+coadd:             {count: 200,   size: 75MiB}                         # deep_coadd 0.080 GB, template_coadd 0.076 GB
+raw_zip:           {count: 16,    size: 2200MiB}                       # raw exposure archive (observed ~2.3 GB)
+object_table:      {count: 8,     size: 1GiB,    ext: parquet}         # object, mean 1.2 GB
+source_table:      {count: 40,    size: 200MiB,  ext: parquet}         # source, mean 0.196 GB
+forced_source:     {count: 200,   size: 7MiB,    ext: parquet}         # object_forced_source, mean 0.007 GB
+small_image:       {count: 2000,  size: 512KiB}                        # deep_coadd_n_image 0.5 MB, artifact masks 0.8 MB
+hips_tile:         {count: 20000, size: 128KiB,  ext: png}             # assumed
+parquet_partition: {count: 100,   size: 450MiB,  ext: parquet}         # 300-600 MB partitions
+text_shard:        {count: 64,    size: 256MiB,  ext: jsonl, kind: text}  # assumed; tokenization input
