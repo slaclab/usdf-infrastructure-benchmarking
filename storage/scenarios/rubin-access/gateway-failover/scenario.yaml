@@ -1,0 +1,3 @@
+description: Steady whole-image reads with a per-second throughput and error timeline, to watch a gateway leave the pool and come back.
+steps:
+  - {label: steady, data: visit_image, signed: true, concurrency: 32, duration_s: 300}

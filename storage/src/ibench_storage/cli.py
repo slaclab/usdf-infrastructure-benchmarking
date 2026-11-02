@@ -30,7 +30,8 @@ def cmd_get(a: argparse.Namespace) -> None:
     prof = profiles.load(a.profile, bucket=a.bucket)
     step = {k: v for k, v in {"label": a.label, "prefix": a.prefix, "concurrency": a.concurrency,
                               "duration_s": a.duration, "range_kib": a.range_kib, "metric": a.metric,
-                              "max_objects": a.max_objects, "direct": a.direct or None}.items() if v is not None}
+                              "max_objects": a.max_objects, "direct": a.direct or None, "signed": a.signed or None,
+                              "keepalive": a.keepalive or None}.items() if v is not None}
     repeat(a, "storage", lambda: steps.run(prof, step, a.scenario, ""))
 
 
@@ -92,6 +93,8 @@ def main() -> None:
     g.add_argument("--metric", choices=("throughput", "latency"), default="throughput")
     g.add_argument("--max-objects", dest="max_objects", type=int)
     g.add_argument("--direct", action="store_true", help="POSIX: O_DIRECT reads")
+    g.add_argument("--signed", action="store_true", help="S3: GET presigned URLs over plain HTTP instead of using warp")
+    g.add_argument("--keepalive", action="store_true", help="with --signed: reuse connections (default: one per download)")
     g.set_defaults(fn=cmd_get, scenario="adhoc")
     add_repeat(g)
 

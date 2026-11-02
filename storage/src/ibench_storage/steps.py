@@ -1,4 +1,5 @@
-"""A read step -> one job per concurrency level -> Run records. S3 profiles use warp, POSIX profiles use fio."""
+"""A read step -> one job per concurrency level -> Run records. S3 profiles use warp (or presigned-URL GETs with
+`signed: true`), POSIX profiles use fio."""
 from __future__ import annotations
 
 import time
@@ -6,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ibench import Run, capture, metric
-from ibench_storage import engine, fio, warp
+from ibench_storage import engine, fio, signedurl, warp
 from ibench_storage.profiles import target
 from ibench_storage.store import Store
 
@@ -34,6 +35,9 @@ def _range_bytes(step: dict) -> int:
 def plan(prof: dict, step: dict, scenario: str, base: str) -> list[Planned]:
     """Jobs for one step; the listing check fails early on a missing prefix instead of mid-run."""
     prefix = prefix_of(step, base)
+    signed = step.get("signed", False)
+    if signed and prof["kind"] != "s3":
+        raise SystemExit("signed: true needs an S3 profile")
     store = Store(prof)
     found = store.list(prefix, limit=step.get("max_objects", 500))
     if not found:
@@ -45,7 +49,10 @@ def plan(prof: dict, step: dict, scenario: str, base: str) -> list[Planned]:
     for level in levels:
         name = f"read.{step['label']}" + (f".c{level}" if len(levels) > 1 else "")
         base_path = engine.RAW / f"{int(time.time())}_{scenario.replace('/', '-')}_{name}"
-        if prof["kind"] == "s3":
+        if signed:
+            job = signedurl.job(prof, prefix, level, step.get("duration_s", 60), rng, base_path,
+                                step.get("keepalive", False), step.get("expires_s"), step.get("max_objects", 500))
+        elif prof["kind"] == "s3":
             job = warp.job(prof, prefix, level, step.get("duration_s", 60), rng, base_path)
         else:
             files = [str(Path(prof["root"]) / k) for k, _ in found]

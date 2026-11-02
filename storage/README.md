@@ -23,6 +23,8 @@ A scenario is config only: `scenarios/<group>/<name>/scenario.yaml`. Payload cla
 | Scenario | Runs | Command |
 |---|---|---|
 | [`rubin-access/object-reads`](scenarios/rubin-access/object-reads) | images, coadds, raw archives, ranged table reads, cutout-sized ranges, small tiles | `run` |
+| [`rubin-access/single-user-burst`](scenarios/rubin-access/single-user-burst) | one client's whole-image reads ramped over concurrency, presigned URLs and header-signed requests side by side | `run` |
+| [`rubin-access/gateway-failover`](scenarios/rubin-access/gateway-failover) | steady reads with a per-second throughput and error timeline, for removing a gateway from the pool | `run` |
 | [`genesis/parquet-reads`](scenarios/genesis/parquet-reads) | parquet partitions swept over concurrency; row-group-sized ranges | `run` |
 | [`genesis/tokenization`](scenarios/genesis/tokenization) | read text shards, tokenize, write token shards | `tokens` |
 | [`interference/dac-vs-genesis`](scenarios/interference/dac-vs-genesis) | image and tile reads alone, bulk parquet alone, then all together | `mix` |
@@ -39,11 +41,22 @@ uv run ibench-storage tokens genesis/tokenization --profile s3 --client <label>
 ```
 
 `mkdata` refuses to write more than `--max-gb` (default 200) and skips objects that exist, so a rerun resumes.
-`get` accepts `--range-kib N` (random ranged reads), `--metric latency` and, for POSIX, `--direct`.
+`get` accepts `--range-kib N` (random ranged reads), `--metric latency`, `--signed` (presigned URLs, see below) and,
+for POSIX, `--direct`.
 
 Reads use warp (S3) or fio (POSIX) and never write to the target: warp runs with `--list-existing --noclear`, fio with
 `--allow_file_create=0`. Throughput steps report Gbps (1e9 bits/s). Latency steps report P99 time to first byte (S3) or
 I/O completion latency (POSIX).
+
+## Signed URLs
+
+A step with `signed: true` (or `get --signed`) reads through presigned URLs instead of header-signed requests, as a
+client does that was handed a download link. `ibench_storage.signedurl` signs one URL per object and endpoint, then
+downloads over plain HTTP with `concurrency` threads: no SDK, a new connection per download unless `keepalive: true`,
+`HTTPS_PROXY` and `NO_PROXY` honoured. URLs last the step duration plus a minute, at least 15 minutes (`expires_s`
+overrides). Each record adds P50 and P99 time to first byte, request rate, errors, `min_1s_gbps`, `median_1s_gbps` and a
+one-second `timeline_gbps` / `timeline_errors`. A download cut off by the end of the step counts its bytes but not its
+latency; a failed download is counted and retried after 0.1 s.
 
 ## Interference
 
@@ -89,6 +102,8 @@ uv run ibench-storage mlperf configview genesis/parquet-training --profile posix
 - A run shorter than a few seconds gives warp too few samples; keep `duration_s` at 30 or more.
 - POSIX reads go through the page cache unless `--direct`; record `--cache cold|warm`. A tiered filesystem can vary
   several-fold between them.
+- Signed-URL reads run in one Python process, so very high concurrency is bounded by that client (the record stores the
+  CPU allocation); compare with a warp step to see the gateway ceiling. Only S3 profiles support `signed`.
 - warp and fio measure different paths (HTTP through a gateway vs a mounted filesystem); compare them as indications,
   not as a like-for-like pair.
 - The tokenization harness uses a small BPE trained on the first shard, so `tokens_per_s` compares storage and CPU

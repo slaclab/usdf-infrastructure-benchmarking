@@ -1,0 +1,4 @@
+description: One client pulling whole visit images in parallel, ramped until the path saturates or throttles; presigned URLs and header-signed requests side by side.
+steps:
+  - {label: url, data: visit_image, signed: true, concurrency: [8, 32, 64, 128, 256], duration_s: 60}
+  - {label: header, data: visit_image, concurrency: [8, 32, 64, 128, 256], duration_s: 60}
