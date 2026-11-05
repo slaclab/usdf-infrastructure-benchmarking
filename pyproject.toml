@@ -7,6 +7,7 @@ dependencies = ["ibench-common", "ibench-network", "ibench-storage", "ibench-rep
 
 [project.optional-dependencies]
 plots = ["ibench-report[plots]"]
+hats = ["ibench-storage[hats]"]
 
 [dependency-groups]
 dev = ["pytest>=8", "moto[server]"]

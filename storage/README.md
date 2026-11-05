@@ -26,6 +26,7 @@ A scenario is config only: `scenarios/<group>/<name>/scenario.yaml`. Payload cla
 | [`rubin-access/single-user-burst`](scenarios/rubin-access/single-user-burst) | one client's whole-image reads ramped over concurrency, presigned URLs and header-signed requests side by side | `run` |
 | [`rubin-access/gateway-failover`](scenarios/rubin-access/gateway-failover) | steady reads with a per-second throughput and error timeline, for removing a gateway from the pool | `run` |
 | [`genesis/parquet-reads`](scenarios/genesis/parquet-reads) | parquet partitions swept over concurrency; row-group-sized ranges | `run` |
+| [`genesis/hats-reads`](scenarios/genesis/hats-reads) | one HATS catalog's partitions read with pyarrow, nested-pandas and lsdb over POSIX or S3 | `hats` |
 | [`genesis/tokenization`](scenarios/genesis/tokenization) | read text shards, tokenize, write token shards | `tokens` |
 | [`interference/dac-vs-genesis`](scenarios/interference/dac-vs-genesis) | image and tile reads alone, bulk parquet alone, then all together | `mix` |
 | [`genesis/parquet-training`](scenarios/genesis/parquet-training) | MLPerf parquet reads swept over partition size, workers, batch size | `mlperf` |
@@ -38,6 +39,7 @@ uv run ibench-storage run    <scenario> --profile s3 --client <label> --repeat 3
 uv run ibench-storage get    --profile s3 --prefix <dir/> --concurrency 1,8,32 --duration 60   # existing data
 uv run ibench-storage mix    interference/dac-vs-genesis --profile s3 --client <label>
 uv run ibench-storage tokens genesis/tokenization --profile s3 --client <label>
+uv run ibench-storage hats   genesis/hats-reads --profile s3 --client <label> --repeat 3    # needs `uv sync --extra hats`
 ```
 
 `mkdata` refuses to write more than `--max-gb` (default 200) and skips objects that exist, so a rerun resumes.

@@ -1,0 +1,9 @@
+description: Reads of a HATS catalog's partitions - the same columns with pyarrow, nested-pandas and lsdb, plus a raw ranged-read ceiling.
+hats:
+  catalog: ${IBENCH_HATS_CATALOG:-lsdb/gaia_dr3/gaia}
+  column: phot_g_mean_mag
+  partitions: 192
+  offset: 0
+  threads: [8]
+  warm: true
+  ceiling: [1, 4, 8, 16, 32]

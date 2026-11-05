@@ -1,0 +1,4 @@
+site: NERSC Perlmutter
+node: {model: "GPU node", cpu: AMD EPYC 7763, memory_gib: 256, nic: HPE Slingshot 11, nic_gbps: 200, gpus: "4x A100"}
+network: {path_to_storage: WAN to S3DF over the internet, notes: "login and compute nodes reach the S3 gateways directly over HTTPS; Jupyter runs on shared nodes, so neighbouring jobs share the NIC and CPUs"}
+storage: {filesystem: Weka (sdfdata) at S3DF, s3_endpoints: [https://sdfdatas3.slac.stanford.edu], notes: ""}

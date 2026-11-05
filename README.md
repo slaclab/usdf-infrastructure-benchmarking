@@ -9,6 +9,7 @@ Network and storage benchmarks with one consolidated performance history. Every 
 uv sync
 uv run pytest -q
 storage/scripts/setup_tools.sh      # warp (S3 reads) and a check for fio (POSIX reads)
+uv sync --extra hats                # also lsdb, hats and s3fs, for the HATS read scenario
 ```
 
 Needs `git` and [`uv`](https://docs.astral.sh/uv/) (fetches Python 3.12). `iperf3` is needed for the network suite,
@@ -41,6 +42,7 @@ uv run ibench-net iperf <host> --streams 1,8,16                  # needs `iperf3
 uv run ibench-storage mkdata rubin-access/object-reads --profile s3 --scale 0.05   # mock payloads, once
 uv run ibench-storage run rubin-access/object-reads --profile s3 --client <label> --repeat 3
 uv run ibench-storage mix interference/dac-vs-genesis --profile s3 --client <label>
+uv run ibench-storage hats genesis/hats-reads --profile s3 --client <label>     # HATS catalog reads; notebook: storage/notebooks/
 uv run ibench-report build                                       # reports/latest.md, reports/history.csv
 ```
 

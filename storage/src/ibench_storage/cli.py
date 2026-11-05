@@ -48,6 +48,19 @@ def cmd_tokens(a: argparse.Namespace) -> None:
     repeat(a, "storage", lambda: [tokens.run(prof, spec, a.scenario, base, a.workers, a.keep_output)])
 
 
+def cmd_hats(a: argparse.Namespace) -> None:
+    """Read the same columns of a HATS catalog with pyarrow, nested-pandas and lsdb."""
+    try:
+        from ibench_storage import hats
+    except ImportError as e:
+        raise SystemExit(f"{e}; install the extra: uv sync --extra hats")
+    prof = profiles.load(a.profile)
+    over = {"catalog": a.catalog, "partitions": a.partitions, "offset": a.offset, "threads": a.threads,
+            "warm": False if a.no_warm else None}
+    spec = {**_scenario(a, "hats")["hats"], **{k: v for k, v in over.items() if v is not None}}
+    repeat(a, "storage", lambda: hats.run(prof, spec, a.scenario))
+
+
 def cmd_mkdata(a: argparse.Namespace) -> None:
     names = a.classes or (scenario.data_classes(scenario.load(a.scenario)) if a.scenario else [])
     if not names:
@@ -109,6 +122,14 @@ def main() -> None:
     t.add_argument("--keep-output", dest="keep_output", action="store_true")
     add_repeat(t)
 
+    h = scenario_cmd("hats", cmd_hats, "HATS catalog reads: pyarrow, nested-pandas and lsdb over POSIX or S3")
+    h.add_argument("--catalog", help="catalog directory relative to the root or bucket")
+    h.add_argument("--partitions", type=int, help="partitions to read in pixel order; 0 = all present")
+    h.add_argument("--offset", type=int, help="skip the first OFFSET partitions")
+    h.add_argument("--threads", type=_levels, help="one value, or a list to sweep: 4,8,16")
+    h.add_argument("--no-warm", dest="no_warm", action="store_true", help="skip the untimed warm pass")
+    add_repeat(h)
+
     d = sub.add_parser("mkdata", help="write mock payloads (datasets.yaml) under IBENCH_DATA_PREFIX")
     d.add_argument("scenario", nargs="?", help="write the classes this scenario reads")
     d.add_argument("--classes", type=lambda s: s.split(","), help="comma-separated classes instead of a scenario")
@@ -129,7 +150,7 @@ def main() -> None:
     k.add_argument("--procs", type=int, default=16, help="datagen processes")
     add_repeat(k)
 
-    for s in (r, g, x, t, k):
+    for s in (r, g, x, t, h, k):
         add_common(s)
     a = p.parse_args()
     a.fn(a)
