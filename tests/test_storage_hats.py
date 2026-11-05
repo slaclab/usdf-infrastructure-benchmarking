@@ -63,10 +63,18 @@ def test_posix_reads(catalog):
 
 
 def test_s3_reads_count_wire_bytes(s3):
-    reads = _check(hats.run(s3, SPEC, "genesis/hats-reads"), 6)
+    reads = _check(hats.run(s3, SPEC, "genesis/hats-reads"), 7)
     counted = [r for r in reads if not r.name.startswith("hats.pa_arrow_native")]
     assert all(r.metrics["wire_mb"] > 0 and r.metrics["over_read"] >= 1 for r in counted)
     assert all(r.params["endpoint"] == s3["endpoint"] for r in reads)
+
+
+def test_variants_selection(catalog):
+    prof = {"name": "posix", "kind": "posix", "root": str(catalog)}
+    runs = hats.run(prof, {**SPEC, "variants": ["lsdb", "pa_arrow_native"], "ceiling": []}, "genesis/hats-reads")
+    assert [r.params["variant"] for r in runs if "variant" in r.params] == ["lsdb"]
+    with pytest.raises(SystemExit, match="unknown variant"):
+        hats.run(prof, {**SPEC, "variants": ["nope"]}, "genesis/hats-reads")
 
 
 def test_s3_rejects_several_endpoints(s3):

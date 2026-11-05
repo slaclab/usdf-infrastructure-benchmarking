@@ -1,0 +1,4 @@
+site: NERSC Perlmutter, exclusive CPU node
+node: {model: "CPU node", cpu: 2x AMD EPYC 7763, cores: 128, memory_gib: 512, nic: HPE Slingshot 11, nic_gbps: 200, gpus: ""}
+network: {path_to_storage: WAN to S3DF over the internet, notes: "one 200G NIC per node; whole node allocated to the job"}
+storage: {filesystem: Weka (sdfdata) at S3DF, s3_endpoints: [https://sdfdatas3.slac.stanford.edu], notes: ""}

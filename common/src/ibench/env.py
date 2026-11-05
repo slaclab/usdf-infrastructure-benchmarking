@@ -40,6 +40,42 @@ def _cgroup_gib() -> float | None:
     return None
 
 
+def _cpu_quota() -> float | None:
+    """CPUs the cgroup may use (cpu.max quota over period); None when unlimited or unknown."""
+    quota, _, period = (_read("/sys/fs/cgroup/cpu.max") or "").partition(" ")
+    return round(int(quota) / int(period), 2) if quota.isdigit() and period.isdigit() else None
+
+
+def _threads_per_core() -> int | None:
+    info = _read("/proc/cpuinfo") or ""
+    siblings, cores = re.search(r"siblings\s*:\s*(\d+)", info), re.search(r"cpu cores\s*:\s*(\d+)", info)
+    return int(siblings[1]) // int(cores[1]) if siblings and cores and int(cores[1]) else None
+
+
+def _nics() -> list[dict]:
+    """Interfaces that are up, with the link speed the driver reports."""
+    base, out = Path("/sys/class/net"), []
+    for d in sorted(base.iterdir()) if base.exists() else []:
+        if d.name == "lo" or _read(str(d / "operstate")) != "up":
+            continue
+        speed, mtu = _read(str(d / "speed")), _read(str(d / "mtu"))
+        out.append({"name": d.name, "speed_mbps": int(speed) if speed and speed.isdigit() and int(speed) > 0 else None,
+                    "mtu": int(mtu) if mtu and mtu.isdigit() else None})
+    return out
+
+
+def _os_name() -> str | None:
+    m = re.search(r'PRETTY_NAME="?([^"\n]+)', _read("/etc/os-release") or "")
+    return m[1] if m else None
+
+
+def _load_1m() -> float | None:
+    try:
+        return round(os.getloadavg()[0], 2)
+    except OSError:
+        return None
+
+
 def cpus() -> int:
     return len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count() or 1
 
@@ -79,6 +115,12 @@ def capture(path: str | None = None) -> dict:
         "kernel": platform.release(),
         "cpu": cpu[1] if cpu else platform.processor(),
         "cpus": cpus(),
+        "cpus_online": os.cpu_count(),
+        "cpu_quota": _cpu_quota(),
+        "threads_per_core": _threads_per_core(),
+        "load_1m": _load_1m(),
+        "nics": _nics(),
+        "os": _os_name(),
         "mem_gib": round(mem_gib(), 1),
         "slurm": {k[6:].lower(): os.environ[k] for k in SLURM_KEYS if k in os.environ},
         "tcp": {k: _read("/proc/sys/net/" + k.replace(".", "/")) for k in TCP_KEYS},

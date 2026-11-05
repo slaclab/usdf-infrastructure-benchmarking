@@ -14,3 +14,11 @@ def test_save_roundtrip(tmp_path):
 
 def test_parse_tags():
     assert parse_tags(["gateway=new", "note=a=b"]) == {"gateway": "new", "note": "a=b"}
+
+
+def test_capture_records_node_shape():
+    from ibench.env import capture
+
+    env = capture()
+    assert {"cpus", "cpus_online", "cpu_quota", "threads_per_core", "load_1m", "nics", "os", "mem_gib"} <= set(env)
+    assert isinstance(env["nics"], list)

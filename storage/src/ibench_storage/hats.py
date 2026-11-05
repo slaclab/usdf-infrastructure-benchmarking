@@ -25,7 +25,8 @@ from ibench_storage.profiles import target
 from ibench_storage.store import Store
 
 RANGE = 64 << 20
-VARIANTS = ("pa_arrow", "pa_pandas_numpy", "pa_pandas_arrow", "npd_direct", "lsdb", "pa_arrow_native")
+VARIANTS = ("pa_arrow", "pa_pandas_numpy", "pa_pandas_arrow", "npd_direct", "lsdb", "pa_arrow_native", "pa_arrow_ranges")
+S3_ONLY = ("pa_arrow_native", "pa_arrow_ranges")
 
 
 class Wire:
@@ -191,10 +192,20 @@ def _variants(src: Source, threads: int) -> dict:
             return (pc.sum(c).as_py() or 0.0), pc.count(c, mode="only_valid").as_py()
         return pool(one)
 
+    def pa_arrow_ranges():
+        from fsspec.parquet import open_parquet_file
+
+        def one(k):
+            with open_parquet_file(src.path(k), columns=cols, engine="pyarrow", fs=src.fs) as f:
+                c = pq.read_table(f, columns=cols, use_threads=False).column(column)
+            return (pc.sum(c).as_py() or 0.0), pc.count(c, mode="only_valid").as_py()
+        return pool(one)
+
     out = {"pa_arrow": pa_arrow, "pa_pandas_numpy": pa_pandas_numpy, "pa_pandas_arrow": pa_pandas_arrow,
            "npd_direct": npd_direct, "lsdb": lsdb_compute}
     if src.s3:
         out["pa_arrow_native"] = pa_arrow_native
+        out["pa_arrow_ranges"] = pa_arrow_ranges
     return out
 
 
@@ -279,6 +290,8 @@ def ceiling(src: Source, spec: dict, threads: int, scenario: str) -> Run:
 
 
 def run(prof: dict, spec: dict, scenario: str) -> list[Run]:
+    if bad := [v for v in spec.get("variants", ()) if v not in VARIANTS]:
+        raise SystemExit(f"unknown variant {', '.join(bad)}; available: {', '.join(VARIANTS)}")
     src = Source(prof, spec)
     levels = spec["threads"] if isinstance(spec.get("threads"), list) else [spec.get("threads", 8)]
     out = [stat_latency(src, scenario)]

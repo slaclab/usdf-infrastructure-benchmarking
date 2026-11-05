@@ -2,7 +2,7 @@
 
 Reads four columns (`column`, `ra`, `dec`, `_healpix_29`) of the same partitions of a HATS catalog with pyarrow
 (to Arrow, to numpy-backed pandas, to Arrow-backed pandas), nested-pandas and lsdb, and on S3 also with pyarrow's
-native S3 client. The same code runs over `--profile posix` and `--profile s3`, so the two paths are comparable.
+native S3 client (`pa_arrow_native`) and pyarrow over fsspec with planned column ranges (`pa_arrow_ranges`). The same code runs over `--profile posix` and `--profile s3`, so the two paths are comparable.
 Every reader reduces to the mean of `column`; the run fails if they disagree.
 
 Also recorded: `hats.stat` (time to stat one partition: S3 HEAD or POSIX stat) and `hats.ceiling.t<N>` (parallel
@@ -28,6 +28,9 @@ uv run ibench-storage hats genesis/hats-reads --profile posix --client <label> -
   over S3 and `over_read` its ratio to `need_mb`; the native pyarrow reader is not counted.
 - A warm pass runs first (connections, gateway and filesystem caches); `--no-warm` skips it. Over POSIX, a cold read
   needs partitions no process on the node has read (`--offset`); `posix_fadvise` does not evict Weka's cache.
+- On S3 the `pa_*` readers without `ranges` or `native` go through s3fs's default read-ahead cache, which fetches far
+  more than the columns need (`over_read` in the tens) and is slow over a WAN; they show what a plain
+  `pd.read_parquet("s3://...")` gets. Pick readers with `--variants lsdb,npd_direct,pa_arrow_native` to skip them.
 - S3 reads use one endpoint: `IBENCH_S3_ENDPOINT` must not list several.
 - Notebook version: [`storage/notebooks/hats_reads.ipynb`](../../../notebooks/hats_reads.ipynb), which calls the same
   code and writes the same records.

@@ -56,7 +56,7 @@ def cmd_hats(a: argparse.Namespace) -> None:
         raise SystemExit(f"{e}; install the extra: uv sync --extra hats")
     prof = profiles.load(a.profile)
     over = {"catalog": a.catalog, "partitions": a.partitions, "offset": a.offset, "threads": a.threads,
-            "warm": False if a.no_warm else None}
+            "variants": a.variants, "warm": False if a.no_warm else None}
     spec = {**_scenario(a, "hats")["hats"], **{k: v for k, v in over.items() if v is not None}}
     repeat(a, "storage", lambda: hats.run(prof, spec, a.scenario))
 
@@ -127,6 +127,7 @@ def main() -> None:
     h.add_argument("--partitions", type=int, help="partitions to read in pixel order; 0 = all present")
     h.add_argument("--offset", type=int, help="skip the first OFFSET partitions")
     h.add_argument("--threads", type=_levels, help="one value, or a list to sweep: 4,8,16")
+    h.add_argument("--variants", type=lambda s: s.split(","), help="comma-separated readers (default: all)")
     h.add_argument("--no-warm", dest="no_warm", action="store_true", help="skip the untimed warm pass")
     add_repeat(h)
 
