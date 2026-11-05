@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = ["ibench-common", "boto3", "pyyaml", "zstandard", "tokenizers"]
 
 [project.optional-dependencies]
-hats = ["lsdb==0.10.4", "hats==0.10.4", "nested-pandas", "universal-pathlib", "s3fs", "pyarrow", "pandas"]
+hats = ["lsdb==0.10.4", "hats==0.10.4", "nested-pandas", "universal-pathlib", "s3fs", "pyarrow", "pandas", "ipykernel"]
 
 [project.scripts]
 ibench-storage = "ibench_storage.cli:main"
