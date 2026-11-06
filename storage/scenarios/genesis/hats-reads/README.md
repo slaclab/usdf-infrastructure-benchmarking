@@ -32,5 +32,32 @@ uv run ibench-storage hats genesis/hats-reads --profile posix --client <label> -
   more than the columns need (`over_read` in the tens) and is slow over a WAN; they show what a plain
   `pd.read_parquet("s3://...")` gets. Pick readers with `--variants lsdb,npd_direct,pa_arrow_native` to skip them.
 - S3 reads use one endpoint: `IBENCH_S3_ENDPOINT` must not list several.
-- Notebook version: [`storage/notebooks/hats_reads.ipynb`](../../../notebooks/hats_reads.ipynb), which calls the same
-  code and writes the same records.
+
+## From Python
+
+The command line calls `ibench_storage.hats.run`, which can be used directly. It returns one record per reader,
+the stat latency and the ceiling levels; `ibench.cli.finish` writes them to `storage/results/`.
+
+```python
+from ibench_storage import hats, profiles, scenario
+
+prof = profiles.load("s3")  # or "posix"
+spec = {**scenario.load("genesis/hats-reads")["hats"], "partitions": 192, "threads": [8],
+        "variants": ["lsdb", "npd_direct", "pa_arrow_native"], "ceiling": []}
+for run in hats.run(prof, spec, "genesis/hats-reads"):
+    print(run.name, run.metrics.get("wall_s"), run.primary)
+```
+
+The S3 setup (s3fs, `UPath` and pyarrow clients, byte counting) is `Source._init_s3` in
+[`hats.py`](../../../src/ibench_storage/hats.py), and the readers are `_variants` in the same file.
+
+## Notebooks
+
+Register the environment as a kernel (`uv run --extra hats python -m ipykernel install --user --name ibench`).
+
+- [`hats_reads.ipynb`](../../../notebooks/hats_reads.ipynb) runs this scenario and writes the same records as the
+  command line.
+- [`hats_reads_s3.ipynb`](../../../notebooks/hats_reads_s3.ipynb) is a self-contained walkthrough of the S3 readers,
+  with a comment on each step and no imports from this repository. Set `IBENCH_S3_ENDPOINT`, `IBENCH_S3_BUCKET`,
+  `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`; optional `IBENCH_HATS_CATALOG`, `IBENCH_HATS_PARTITIONS` and
+  `IBENCH_HATS_THREADS`.
