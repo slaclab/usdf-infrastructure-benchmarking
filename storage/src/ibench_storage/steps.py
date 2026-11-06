@@ -63,6 +63,8 @@ def plan(prof: dict, step: dict, scenario: str, base: str) -> list[Planned]:
 
 
 def record(prof: dict, p: Planned, metrics: dict, step: dict, scenario: str, seconds: float) -> Run:
+    if step.get("metric") == "latency" and "p99_ms" not in metrics:
+        raise SystemExit(f"{p.job.tool} reported no latency for {p.name}; raise duration_s or concurrency")
     primary = (metric("p99_ms", metrics["p99_ms"], "ms", higher_is_better=False)
                if step.get("metric") == "latency" else metric("gbps", metrics["gbps"], "Gbps"))
     env = {**capture(prof.get("root")),

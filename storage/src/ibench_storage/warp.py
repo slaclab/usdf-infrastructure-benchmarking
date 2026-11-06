@@ -49,22 +49,26 @@ def job(prof: dict, prefix: str, concurrency: int, duration_s: float, range_byte
 
 
 def _latency(op: dict) -> dict:
-    """Request-weighted median and worst-bucket P99 of time to first byte over every size class warp reports."""
+    """Request-weighted median and worst-bucket P99 of time to first byte over every size class warp reports.
+    Size classes without a first-byte summary (too few requests) are left out; with none, only what remains is set."""
     buckets = []
     for segments in op["requests_by_client"].values():
         for seg in segments:
             if s := seg.get("single_sized_requests"):
-                buckets.append({"n": s["requests"], "bytes": s["obj_size"], "ttfb": s["first_byte"],
-                                "avg": s["dur_avg_millis"], "p99": s["dur_99_millis"]})
+                buckets.append({"n": s["requests"], "ttfb": s.get("first_byte"), "avg": s.get("dur_avg_millis"),
+                                "p99": s.get("dur_99_millis")})
             for b in (seg.get("multi_sized_requests") or {}).get("by_size", []):
-                buckets.append({"n": b["requests"], "bytes": b["avg_obj_size"], "ttfb": b["first_byte"],
-                                "avg": b["avg_duration_millis"], "p99": None})
-    n = sum(b["n"] for b in buckets) or 1
-    out = {"p50_ms": sum(b["n"] * b["ttfb"]["median_millis"] for b in buckets) / n,
-           "p99_ms": max(b["ttfb"]["p99_millis"] for b in buckets),
-           "req_avg_ms": sum(b["n"] * b["avg"] for b in buckets) / n, "latency_basis": "ttfb"}
-    if all(b["p99"] is not None for b in buckets):
-        out["req_p99_ms"] = max(b["p99"] for b in buckets)
+                buckets.append({"n": b["requests"], "ttfb": b.get("first_byte"), "avg": b.get("avg_duration_millis"),
+                                "p99": None})
+    out = {"latency_basis": "ttfb"}
+    if timed := [b for b in buckets if b["ttfb"]]:
+        n = sum(b["n"] for b in timed) or 1
+        out["p50_ms"] = sum(b["n"] * b["ttfb"]["median_millis"] for b in timed) / n
+        out["p99_ms"] = max(b["ttfb"]["p99_millis"] for b in timed)
+    if (avg := [b for b in buckets if b["avg"] is not None]) and (n := sum(b["n"] for b in avg)):
+        out["req_avg_ms"] = sum(b["n"] * b["avg"] for b in avg) / n
+        if all(b["p99"] is not None for b in avg):
+            out["req_p99_ms"] = max(b["p99"] for b in avg)
     return out
 
 

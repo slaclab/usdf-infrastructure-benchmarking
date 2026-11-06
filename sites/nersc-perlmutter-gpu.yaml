@@ -1,0 +1,4 @@
+site: NERSC Perlmutter, exclusive GPU node
+node: {model: "GPU node", cpu: AMD EPYC 7763, cores: 64, memory_gib: 256, nic: 4x HPE Slingshot 11, nic_gbps: 200, gpus: "4x A100"}
+network: {path_to_storage: WAN to S3DF over the internet, notes: "four 200G NICs per node, 200G each; whole node allocated to the job"}
+storage: {filesystem: Weka (sdfdata) at S3DF, s3_endpoints: [https://sdfdatas3.slac.stanford.edu], notes: ""}

@@ -23,6 +23,32 @@ def test_warp_parse_single_sized_has_request_p99():
     assert m["req_p99_ms"] >= m["req_avg_ms"] > 0 and m["latency_basis"] == "ttfb"
 
 
+def _fixture(name):
+    import zstandard
+
+    return json.loads(zstandard.ZstdDecompressor().stream_reader((FIX / name).open("rb")).read())
+
+
+def test_warp_latency_skips_size_classes_without_first_byte():
+    op = _fixture("warp_get_multi_sized.json.zst")["by_op_type"]["GET"]
+    full = warp._latency(op)
+    buckets = [b for segs in op["requests_by_client"].values() for seg in segs for b in seg["multi_sized_requests"]["by_size"]]
+    buckets[0].pop("first_byte")
+    partial = warp._latency(op)
+    assert 0 < partial["p50_ms"] <= partial["p99_ms"] and partial["req_avg_ms"] == pytest.approx(full["req_avg_ms"])
+    for b in buckets:
+        b.pop("first_byte", None)
+    assert "p50_ms" not in warp._latency(op) and warp._latency(op)["req_avg_ms"] > 0
+
+
+def test_latency_step_without_first_byte_fails_clearly(tmp_path):
+    from ibench_storage import steps
+
+    p = steps.Planned("read.x", 1, "p/", engine.Job("warp", ["warp"], {}, tmp_path, None))
+    with pytest.raises(SystemExit, match="reported no latency"):
+        steps.record({"name": "s3", "kind": "s3"}, p, {"gbps": 1.0}, {"label": "x", "metric": "latency"}, "s", 1.0)
+
+
 def test_warp_parse_rejects_empty(tmp_path):
     import zstandard
 
