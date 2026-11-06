@@ -41,6 +41,12 @@ def test_warp_latency_skips_size_classes_without_first_byte():
     assert "p50_ms" not in warp._latency(op) and warp._latency(op)["req_avg_ms"] > 0
 
 
+def test_warp_latency_tolerates_null_size_classes():
+    op = {"requests_by_client": {"c": [{"multi_sized_requests": {"by_size": None}}, {"single_sized_requests": None}, None]}}
+    assert warp._latency(op) == {"latency_basis": "ttfb"}
+    assert warp._latency({"requests_by_client": None}) == {"latency_basis": "ttfb"}
+
+
 def test_latency_step_without_first_byte_fails_clearly(tmp_path):
     from ibench_storage import steps
 

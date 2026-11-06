@@ -52,12 +52,12 @@ def _latency(op: dict) -> dict:
     """Request-weighted median and worst-bucket P99 of time to first byte over every size class warp reports.
     Size classes without a first-byte summary (too few requests) are left out; with none, only what remains is set."""
     buckets = []
-    for segments in op["requests_by_client"].values():
-        for seg in segments:
+    for segments in (op.get("requests_by_client") or {}).values():
+        for seg in filter(None, segments or []):
             if s := seg.get("single_sized_requests"):
                 buckets.append({"n": s["requests"], "ttfb": s.get("first_byte"), "avg": s.get("dur_avg_millis"),
                                 "p99": s.get("dur_99_millis")})
-            for b in (seg.get("multi_sized_requests") or {}).get("by_size", []):
+            for b in (seg.get("multi_sized_requests") or {}).get("by_size") or []:
                 buckets.append({"n": b["requests"], "ttfb": b.get("first_byte"), "avg": b.get("avg_duration_millis"),
                                 "p99": None})
     out = {"latency_basis": "ttfb"}
