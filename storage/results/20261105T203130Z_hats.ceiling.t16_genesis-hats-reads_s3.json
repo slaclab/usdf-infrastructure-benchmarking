@@ -1,0 +1,109 @@
+{
+  "suite": "storage",
+  "name": "hats.ceiling.t16",
+  "primary": {
+    "name": "gbps",
+    "value": 5.6250812066705596,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "gbps": 5.6250812066705596,
+    "wall_s": 3.0541548740002327,
+    "gb": 2.147483648
+  },
+  "params": {
+    "catalog": "lsdb/gaia_dr3/gaia",
+    "column": "phot_g_mean_mag",
+    "partitions": 16,
+    "offset": 0,
+    "endpoint": "https://sdfdatas3.slac.stanford.edu",
+    "lookup": "path",
+    "pool": 64,
+    "threads": 16,
+    "range_mib": 64
+  },
+  "scenario": "genesis/hats-reads",
+  "profile": "s3",
+  "cache": "unknown",
+  "tags": {
+    "target": "https://sdfdatas3.slac.stanford.edu/rubin-benchmarks/lsdb/gaia_dr3/gaia",
+    "client": "nersc-perlmutter",
+    "session": "2026-11-05T20:26:10+00:00"
+  },
+  "env": {
+    "host": "nid200288",
+    "kernel": "6.4.0-150600.23.135_15.0.45-cray_shasta_c",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "cpus": 32,
+    "mem_gib": 503.2,
+    "slurm": {
+      "job_id": "60869010",
+      "job_partition": "shared_urgent_gpu_ss11",
+      "job_nodelist": "nid200288",
+      "job_account": "gen0022_g",
+      "job_qos": "gpu_shared_jupyter",
+      "job_gpus": "1",
+      "cpus_on_node": "32"
+    },
+    "tcp": {
+      "ipv4.tcp_congestion_control": "cubic",
+      "core.default_qdisc": "fq_codel",
+      "core.rmem_max": "2147483647",
+      "core.wmem_max": "2147483647",
+      "ipv4.tcp_rmem": "4096\t87380\t2147483647",
+      "ipv4.tcp_wmem": "4096\t87380\t2147483647"
+    },
+    "mount": null,
+    "git": {
+      "sha": "ef96296",
+      "dirty": true
+    },
+    "uv_lock": "6bd066450e63",
+    "iperf3": [
+      "iperf 3.15 (cJSON 1.7.15)"
+    ],
+    "libs": {
+      "lsdb": "0.10.4",
+      "hats": "0.10.4",
+      "nested-pandas": "0.6.10",
+      "pyarrow": "26.0.1",
+      "s3fs": "2026.9.0",
+      "dask": "2026.8.0"
+    },
+    "tool": {
+      "name": "range-read",
+      "version": "0.10.4",
+      "cmd": [
+        "<repo>/.venv/lib/python3.12/site-packages/ipykernel_launcher.py",
+        "-f",
+        "/tmp/jupyter-runtime-66bfe45a-6a37-473d-9156-89b1f13e4d6c/kernel-17eb30b5-945d-40bc-8a6d-cc4cd43807d9.json"
+      ]
+    },
+    "site": {
+      "site": "NERSC Perlmutter",
+      "node": {
+        "model": "GPU node",
+        "cpu": "AMD EPYC 7763",
+        "memory_gib": 256,
+        "nic": "HPE Slingshot 11",
+        "nic_gbps": 200,
+        "gpus": "4x A100"
+      },
+      "network": {
+        "path_to_storage": "WAN to S3DF over the internet",
+        "notes": "login and compute nodes reach the S3 gateways directly over HTTPS; Jupyter runs on shared nodes, so neighbouring jobs share the NIC and CPUs"
+      },
+      "storage": {
+        "filesystem": "Weka (sdfdata) at S3DF",
+        "s3_endpoints": [
+          "https://sdfdatas3.slac.stanford.edu"
+        ],
+        "notes": ""
+      }
+    }
+  },
+  "started": "2026-11-05T20:31:30+00:00",
+  "duration_s": 3.0541548740002327,
+  "source": "ibench"
+}

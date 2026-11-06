@@ -1,0 +1,100 @@
+{
+  "suite": "network",
+  "name": "path",
+  "primary": {
+    "name": "rtt_avg_ms",
+    "value": 1.334,
+    "unit": "ms",
+    "higher_is_better": false
+  },
+  "metrics": {
+    "rtt_min_ms": 1.307,
+    "rtt_avg_ms": 1.334,
+    "rtt_max_ms": 1.381,
+    "rtt_mdev_ms": 0.017,
+    "loss_pct": 0.0,
+    "pmtu": 9000,
+    "hops": 10,
+    "method": "icmp",
+    "tracepath": "1?: [LOCALHOST]                      pmtu 9000\n 1:  128.55.64.3                                           0.302ms \n 1:  128.55.64.3                                           0.189ms \n 2:  128.55.192.245                                        0.235ms \n 3:  128.55.192.62                                         0.409ms \n 4:  no reply\n 5:  134.55.56.39                                          1.498ms asymm  7 \n 6:  no reply\n 7:  198.129.78.154                                        1.679ms \n 8:  no reply\n 9:  no reply\n10:  134.79.23.55                                          1.422ms reached\n     Resume: pmtu 9000 hops 10 back 12"
+  },
+  "params": {
+    "host": "sdfdatas3.slac.stanford.edu",
+    "count": 20,
+    "port": 443
+  },
+  "scenario": "",
+  "profile": "sdfdatas3.slac.stanford.edu",
+  "cache": "unknown",
+  "tags": {
+    "client": "nersc-perlmutter-gpu"
+  },
+  "env": {
+    "host": "nid200460",
+    "kernel": "6.4.0-150600.23.135_15.0.45-cray_shasta_c",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "cpus": 128,
+    "cpus_online": 128,
+    "cpu_quota": null,
+    "threads_per_core": 2,
+    "load_1m": 0.85,
+    "nics": [
+      {
+        "name": "hsn0",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "hsn1",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "hsn2",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "hsn3",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "nmn0",
+        "speed_mbps": 1000,
+        "mtu": 1500
+      }
+    ],
+    "os": "SUSE Linux Enterprise Server 15 SP6",
+    "mem_gib": 503.2,
+    "slurm": {
+      "job_id": "60924062",
+      "job_partition": "urgent_gpu_ss11",
+      "job_nodelist": "nid200460",
+      "job_account": "gen0022_g",
+      "job_qos": "gpu_interactive",
+      "job_gpus": "0,1,2,3",
+      "cpus_on_node": "128"
+    },
+    "tcp": {
+      "ipv4.tcp_congestion_control": "cubic",
+      "core.default_qdisc": "fq_codel",
+      "core.rmem_max": "2147483647",
+      "core.wmem_max": "2147483647",
+      "ipv4.tcp_rmem": "4096\t87380\t2147483647",
+      "ipv4.tcp_wmem": "4096\t87380\t2147483647"
+    },
+    "mount": null,
+    "git": {
+      "sha": "468dd64",
+      "dirty": true
+    },
+    "uv_lock": "6bd066450e63",
+    "iperf3": [
+      "iperf 3.15 (cJSON 1.7.15)"
+    ]
+  },
+  "started": "2026-11-06T20:27:41+00:00",
+  "duration_s": 32.07332158088684,
+  "source": "ibench"
+}

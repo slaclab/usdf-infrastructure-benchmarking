@@ -1,0 +1,159 @@
+{
+  "suite": "storage",
+  "name": "hats.npd_direct.n64.t16",
+  "primary": {
+    "name": "gbps",
+    "value": 2.82909614825048,
+    "unit": "Gbps",
+    "higher_is_better": true
+  },
+  "metrics": {
+    "gbps": 2.82909614825048,
+    "wall_s": 5.7033164779422805,
+    "need_mb": 2016.903835,
+    "mean": 18.88875144020268,
+    "wire_mb": 2144.903415,
+    "over_read": 1.0634634025573162
+  },
+  "params": {
+    "catalog": "lsdb/gaia_dr3/gaia",
+    "column": "phot_g_mean_mag",
+    "partitions": 64,
+    "offset": 0,
+    "endpoint": "https://sdfdatas3.slac.stanford.edu",
+    "lookup": "path",
+    "pool": 64,
+    "threads": 16,
+    "variant": "npd_direct",
+    "warm": true
+  },
+  "scenario": "genesis/hats-reads",
+  "profile": "s3",
+  "cache": "unknown",
+  "tags": {
+    "target": "https://sdfdatas3.slac.stanford.edu/rubin-benchmarks/lsdb/gaia_dr3/gaia",
+    "client": "nersc-perlmutter-gpu",
+    "session": "2026-11-06T21:04:39+00:00"
+  },
+  "env": {
+    "host": "nid200460",
+    "kernel": "6.4.0-150600.23.135_15.0.45-cray_shasta_c",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "cpus": 128,
+    "cpus_online": 128,
+    "cpu_quota": null,
+    "threads_per_core": 2,
+    "load_1m": 1.61,
+    "nics": [
+      {
+        "name": "hsn0",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "hsn1",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "hsn2",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "hsn3",
+        "speed_mbps": 200000,
+        "mtu": 9000
+      },
+      {
+        "name": "nmn0",
+        "speed_mbps": 1000,
+        "mtu": 1500
+      }
+    ],
+    "os": "SUSE Linux Enterprise Server 15 SP6",
+    "mem_gib": 503.2,
+    "slurm": {
+      "job_id": "60924062",
+      "job_partition": "urgent_gpu_ss11",
+      "job_nodelist": "nid200460",
+      "job_account": "gen0022_g",
+      "job_qos": "gpu_interactive",
+      "job_gpus": "0,1,2,3",
+      "cpus_on_node": "128"
+    },
+    "tcp": {
+      "ipv4.tcp_congestion_control": "cubic",
+      "core.default_qdisc": "fq_codel",
+      "core.rmem_max": "2147483647",
+      "core.wmem_max": "2147483647",
+      "ipv4.tcp_rmem": "4096\t87380\t2147483647",
+      "ipv4.tcp_wmem": "4096\t87380\t2147483647"
+    },
+    "mount": null,
+    "git": {
+      "sha": "043e5a3",
+      "dirty": true
+    },
+    "uv_lock": "6bd066450e63",
+    "iperf3": [
+      "iperf 3.15 (cJSON 1.7.15)"
+    ],
+    "libs": {
+      "lsdb": "0.10.4",
+      "hats": "0.10.4",
+      "nested-pandas": "0.6.10",
+      "pyarrow": "26.0.1",
+      "s3fs": "2026.9.0",
+      "dask": "2026.8.0"
+    },
+    "tool": {
+      "name": "npd_direct",
+      "version": "0.10.4",
+      "cmd": [
+        "<repo>/.venv/bin/ibench-storage",
+        "hats",
+        "genesis/hats-reads",
+        "--profile",
+        "s3",
+        "--client",
+        "nersc-perlmutter-gpu",
+        "--partitions",
+        "64",
+        "--threads",
+        "1,4,8,16,32",
+        "--variants",
+        "lsdb,npd_direct,pa_arrow_native,pa_arrow_ranges",
+        "--repeat",
+        "3"
+      ]
+    },
+    "site": {
+      "site": "NERSC Perlmutter, exclusive GPU node",
+      "node": {
+        "model": "GPU node",
+        "cpu": "AMD EPYC 7763",
+        "cores": 64,
+        "threads": 128,
+        "memory_gib": 512,
+        "nic": "4x HPE Slingshot 11",
+        "nic_gbps": 200,
+        "gpus": "4x A100"
+      },
+      "network": {
+        "path_to_storage": "WAN to S3DF over the internet",
+        "notes": "four 200G NICs per node (MTU 9000); whole node allocated to the job; MemTotal reads 503 GiB"
+      },
+      "storage": {
+        "filesystem": "Weka (sdfdata) at S3DF",
+        "s3_endpoints": [
+          "https://sdfdatas3.slac.stanford.edu"
+        ],
+        "notes": ""
+      }
+    }
+  },
+  "started": "2026-11-06T21:08:08+00:00",
+  "duration_s": 5.7033164779422805,
+  "source": "ibench"
+}
