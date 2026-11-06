@@ -64,6 +64,13 @@ def _nics() -> list[dict]:
     return out
 
 
+def _gpus() -> list[dict]:
+    """GPUs visible to the job: model, memory and driver from nvidia-smi; empty when absent."""
+    out = sh("nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader,nounits") or ""
+    rows = [[c.strip() for c in line.split(",")] for line in out.splitlines() if line.count(",") == 2]
+    return [{"name": n, "memory_mib": int(m) if m.isdigit() else None, "driver": d} for n, m, d in rows]
+
+
 def _os_name() -> str | None:
     m = re.search(r'PRETTY_NAME="?([^"\n]+)', _read("/etc/os-release") or "")
     return m[1] if m else None
@@ -120,6 +127,7 @@ def capture(path: str | None = None) -> dict:
         "threads_per_core": _threads_per_core(),
         "load_1m": _load_1m(),
         "nics": _nics(),
+        "gpus": _gpus(),
         "os": _os_name(),
         "mem_gib": round(mem_gib(), 1),
         "slurm": {k[6:].lower(): os.environ[k] for k in SLURM_KEYS if k in os.environ},
