@@ -127,7 +127,7 @@ def capture(path: str | None = None) -> dict:
         "mount": mount_of(path) if path else None,
         "git": {
             "sha": sh("git", "-C", root, "rev-parse", "--short", "HEAD"),
-            "dirty": bool(sh("git", "-C", root, "status", "--porcelain")),
+            "dirty": bool(sh("git", "-C", root, "status", "--porcelain", "--untracked-files=no")),
         },
         "uv_lock": hashlib.sha256(lock.read_bytes()).hexdigest()[:12] if lock.exists() else None,
         "iperf3": (sh("iperf3", "--version") or "").splitlines()[:1],
